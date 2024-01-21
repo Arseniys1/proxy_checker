@@ -8,6 +8,7 @@ const readline = require('readline').createInterface({
 let file_name_read = "proxy.txt";
 let file_name_save = "proxy_save.txt";
 let url = null;
+let url_parsed = null;
 let protocols = [
     "http",
     "https",
@@ -53,7 +54,7 @@ function axios_request(proxy_string) {
 
 
 function result(res, proxy_string, protocol) {
-    if (res.status === 200) {
+    if (res.status === 200 && res.data.includes(url_parsed.host) && !res.data.includes("REQUEST_URI")) {
         if (!valid_buffer.includes(proxy_string)) valid_buffer.push(proxy_string);
         console.log(`Найден валидный прокси: ${proxy_string} Протокол: ${protocol}`);
     }
@@ -87,6 +88,7 @@ function select_protocols(protocols_selected) {
 
 readline.question("Введите адрес сайта:", site_url => {
     url = site_url;
+    url_parsed = new URL(site_url);
 
     readline.question(`Протоколы: ${protocols.join(",")}?`, protocols_selected => {
         if (protocols_selected.length > 0) protocols = select_protocols(protocols_selected);
