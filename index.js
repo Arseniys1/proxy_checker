@@ -1,5 +1,6 @@
 const axios = require("axios");
 const fs = require("fs");
+const UserAgent = require("user-agents");
 const readline = require('readline').createInterface({
     input: process.stdin,
     output: process.stdout
@@ -30,6 +31,11 @@ function axios_request(proxy_string) {
     let proxy_address = proxy_split[0];
     let proxy_port = parseInt(proxy_split[1]);
 
+    const headers = {
+        "User-Agent": new UserAgent().toString(),
+        "Accept-Encoding": "gzip, deflate, br",
+    };
+
     for (let key in protocols) {
         let protocol = protocols[key];
         let timeout = timeouts[key];
@@ -41,6 +47,7 @@ function axios_request(proxy_string) {
                     host: proxy_address,
                     port: proxy_port,
                 },
+                headers: headers,
                 timeout: 15000,
             }).then((res) => {
                 threads_counter -= 1;
@@ -54,10 +61,8 @@ function axios_request(proxy_string) {
 
 
 function result(res, proxy_string, protocol) {
-    if (res.status === 200 && res.data.includes(url_parsed.host) && !res.data.includes("REQUEST_URI")) {
-        if (!valid_buffer.includes(proxy_string)) valid_buffer.push(proxy_string);
-        console.log(`Найден валидный прокси: ${proxy_string} Протокол: ${protocol}`);
-    }
+    if (!valid_buffer.includes(proxy_string)) valid_buffer.push(proxy_string);
+    console.log(`Найден валидный прокси: ${proxy_string} Протокол: ${protocol}`);
 }
 
 function error(err) {
